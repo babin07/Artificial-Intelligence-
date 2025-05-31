@@ -1,1 +1,152 @@
+#include <iostream>
+using namespace std;
 
+char board[3][3];
+
+// Initialize the board with empty spaces
+void initializeBoard() {
+    for(int i = 0; i < 3; i++)
+        for(int j = 0; j < 3; j++)
+            board[i][j] = ' ';
+}
+
+// Display the current board
+void displayBoard() {
+    cout << "\n";
+    for(int i = 0; i < 3; i++) {
+        cout << " " << board[i][0] << " | " << board[i][1] << " | " << board[i][2] << " \n";
+        if(i < 2) cout << "---+---+---\n";
+    }
+    cout << "\n";
+}
+
+// Check if a player has won
+bool checkWin(char player) {
+    // Check rows and columns
+    for(int i = 0; i < 3; i++) {
+        if((board[i][0] == player && board[i][1] == player && board[i][2] == player) ||
+           (board[0][i] == player && board[1][i] == player && board[2][i] == player))
+            return true;
+    }
+    // Check diagonals
+    if((board[0][0] == player && board[1][1] == player && board[2][2] == player) ||
+       (board[0][2] == player && board[1][1] == player && board[2][0] == player))
+        return true;
+
+    return false;
+}
+
+// Check if the board is full (draw)
+bool isBoardFull() {
+    for(int i = 0; i < 3; i++)
+        for(int j = 0; j < 3; j++)
+            if(board[i][j] == ' ')
+                return false;
+    return true;
+}
+
+// Try to find a winning move for the player, if found place the move and return true
+bool tryWinningMove(char player) {
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j < 3; j++) {
+            if(board[i][j] == ' ') {
+                board[i][j] = player;
+                if(checkWin(player)) {
+                    return true;
+                }
+                board[i][j] = ' '; // Undo move
+            }
+        }
+    }
+    return false;
+}
+
+// AI makes its move
+void aiMove() {
+    // 1. Win if possible
+    if (tryWinningMove('X')) {
+        cout << "AI plays winning move.\n";
+        return;
+    }
+
+    // 2. Block if human can win next
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j < 3; j++) {
+            if(board[i][j] == ' ') {
+                board[i][j] = 'O';
+                if(checkWin('O')) {
+                    board[i][j] = 'X'; // Block here
+                    cout << "AI blocks your winning move.\n";
+                    return;
+                }
+                board[i][j] = ' ';
+            }
+        }
+    }
+
+    // 3. Else, take the first empty spot (simple fallback)
+    for(int i = 0; i < 3; i++) {
+        for(int j = 0; j < 3; j++) {
+            if(board[i][j] == ' ') {
+                board[i][j] = 'X';
+                cout << "AI places at position (" << i+1 << ", " << j+1 << ").\n";
+                return;
+            }
+        }
+    }
+}
+
+// Human plays their move
+void humanMove() {
+    int row, col;
+    while(true) {
+        cout << "Enter your move (row and column: 1 1 to 3 3): ";
+        cin >> row >> col;
+        row--; col--;
+        if(row >= 0 && row < 3 && col >= 0 && col < 3 && board[row][col] == ' ') {
+            board[row][col] = 'O';
+            break;
+        } else {
+            cout << "Invalid move. Try again.\n";
+        }
+    }
+}
+
+int main() {
+    cout << "Tic-Tac-Toe: AI(X) vs Human(O). AI goes first.\n";
+    initializeBoard();
+    displayBoard();
+
+    // AI makes the first move
+    aiMove();
+    displayBoard();
+
+    while(true) {
+        humanMove();
+        displayBoard();
+
+        if(checkWin('O')) {
+            cout << "You win! Congratulations!\n";
+            break;
+        }
+        if(isBoardFull()) {
+            cout << "It's a draw!\n";
+            break;
+        }
+
+        aiMove();
+        displayBoard();
+
+        if(checkWin('X')) {
+            cout << "AI wins! Better luck next time.\n";
+            break;
+        }
+        if(isBoardFull()) {
+            cout << "It's a draw!\n";
+            break;
+        }
+    }
+
+    return 0;
+}
+    
